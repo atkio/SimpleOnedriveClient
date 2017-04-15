@@ -141,7 +141,7 @@ namespace SimpleOnedriveClient
         }
 
         // ファイル削除処理
-        private async Task deleteFile(string remotePath, string name)
+        public async Task deleteFile(string remotePath, string name)
         {
            
                 using (HttpClient httpClient = new HttpClient())
@@ -156,6 +156,31 @@ namespace SimpleOnedriveClient
                     
                 }
            
+        }
+
+
+        // フォルダの新規作成
+        public async Task CreateFolder(string remotePath, string pathname)
+        {
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+                httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+                
+                HttpRequestMessage request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children", remotePath))
+                );
+
+           
+                request.Content = new StringContent("{\"name\": \"" + pathname + "\",\"folder\": { }}", Encoding.UTF8, "application/json");
+
+                var response = await httpClient.SendAsync(request);
+
+                Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+            }
+
         }
     }
 }

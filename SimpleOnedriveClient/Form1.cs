@@ -61,8 +61,7 @@ namespace SimpleOnedriveClient
 
                 ProcessFolder(folder);
 
-                await new SimpleClient(AuthStore.Instance.access_token).uploadFileFromUrl( "http://wscont2.apps.microsoft.com/winstore/1x/e33e38d9-d138-42a1-b252-27da1924ca87/Screenshot.225037.100000.jpg","test.jpg","cosplay");
-                
+                await new SimpleClient(AuthStore.Instance.access_token).CreateFolder("cosplay", "1");
             }
             catch (Exception exception)
             {
