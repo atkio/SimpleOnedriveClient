@@ -73,6 +73,7 @@
     <Compile Include="OneDriveTile.Designer.cs">
       <DependentUpon>OneDriveTile.cs</DependentUpon>
     </Compile>
+    <Compile Include="OneItems.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Signin.cs">
@@ -81,6 +82,7 @@
     <Compile Include="Signin.Designer.cs">
       <DependentUpon>Signin.cs</DependentUpon>
     </Compile>
+    <Compile Include="SimpleClient.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

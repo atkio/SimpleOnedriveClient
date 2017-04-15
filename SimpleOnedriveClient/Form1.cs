@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -55,9 +56,13 @@ namespace SimpleOnedriveClient
                 var expandValue = "thumbnails,children($expand=thumbnails)";
                  
               
-                    folder = await this.graphClient.Drive.Root.Request().Expand(expandValue).GetAsync();
-             
+                folder = await this.graphClient.Drive.Root.Request().Expand(expandValue).GetAsync();
+               
+
                 ProcessFolder(folder);
+
+                await new SimpleClient(AuthStore.Instance.access_token).uploadFileFromUrl( "http://wscont2.apps.microsoft.com/winstore/1x/e33e38d9-d138-42a1-b252-27da1924ca87/Screenshot.225037.100000.jpg","test.jpg","cosplay");
+                
             }
             catch (Exception exception)
             {
@@ -83,6 +88,8 @@ namespace SimpleOnedriveClient
 
                 var folder =
                     await this.graphClient.Drive.Items[id].Request().Expand(expandValue).GetAsync();
+
+             
 
                 ProcessFolder(folder);
             }
@@ -152,9 +159,12 @@ namespace SimpleOnedriveClient
         void ChildObject_DoubleClick(object sender, EventArgs e)
         {
             var item = ((OneDriveTile)sender).SourceItem;
+         
 
             // Look up the object by ID
             LoadFolderFromId(item.Id);
+
+           
         }
         void ChildObject_Click(object sender, EventArgs e)
         {
