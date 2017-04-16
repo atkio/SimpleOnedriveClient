@@ -13,12 +13,32 @@ namespace SimpleOneDrive
     public class SimpleClient
     {
 
-        public SimpleClient(string accessToken)
+        private static object syncRoot = new Object();
+
+        private SimpleClient()
         {
-            this.AccessToken = accessToken;
+
         }
 
-        public string AccessToken { get; private set; }
+        public static SimpleClient Instance
+        {
+            get
+            {
+              
+                if (_Instance == null)
+                    lock (syncRoot)
+                    {
+                        if (_Instance == null)
+                            _Instance = new SimpleClient();
+                    }
+
+                return _Instance;
+            }
+        }
+
+        private static SimpleClient _Instance = null;
+
+        public string AccessToken { get { return AuthStore.Instance.GetToken(); } }
 
         // ファイル一覧表示
         public async Task<MyFiles> GetRootFiles()
