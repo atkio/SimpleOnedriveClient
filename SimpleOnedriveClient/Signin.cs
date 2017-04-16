@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SimpleOneDrive;
 
 namespace SimpleOnedriveClient
 {
@@ -39,7 +40,8 @@ namespace SimpleOnedriveClient
 
                 if (webBrowser1.Url.ToString().StartsWith(redirect_uri.Text))
                 {
-                    if (AuthHelper.GetToken(
+
+                    if (AuthStore.TryAuthentication(
                         client_id.Text,
                         client_secret.Text,
                         redirect_uri.Text,

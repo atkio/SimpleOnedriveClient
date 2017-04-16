@@ -184,31 +184,52 @@ namespace SimpleOneDrive
         }
 
 
-        // フォルダの新規作成
-        public async Task CreateFolder(string remotePath, string pathname)
+        /// <summary>
+        /// フォルダの新規作成
+        /// 二層だけ
+        /// 只能建两层子目录
+        /// </summary>
+        /// <param name="pathname"></param>
+        /// <returns></returns>
+        public async Task CreateFolder(params string[] pathname)
         {
+          
+            string baserul = "https://graph.microsoft.com/v1.0/me/drive/root:/";
+            foreach (var remotePath in pathname)
+            {
+                await CreateFolderBase(baserul, remotePath);
+                baserul = baserul + remotePath + ":/";
+            }
 
+        }
+    
+
+    // フォルダの新規作成
+    public async Task CreateFolderBase(string baseurl,string folder)
+    {
+     
             using (HttpClient httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
 
                 HttpRequestMessage request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children", remotePath))
+                    HttpMethod.Post, new Uri(baseurl + "children")
                 );
 
 
-                request.Content = new StringContent("{\"name\": \"" + pathname + "\",\"folder\": { }}", Encoding.UTF8, "application/json");
+                request.Content = new StringContent("{\"name\": \"" + folder + "\",\"folder\": { }}", Encoding.UTF8, "application/json");
 
                 var response = await httpClient.SendAsync(request);
 
                 Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
             }
-
+            
         }
-    }
-    public class MyFile
+
+}
+
+public class MyFile
     {
         public string name { get; set; }
         // 以下のプロパティは今回使用しませんが、デバッグ時に値を見ることをお勧めします。
