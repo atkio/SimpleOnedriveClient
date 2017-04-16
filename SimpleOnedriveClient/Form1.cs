@@ -1,5 +1,6 @@
 ﻿using SimpleOneDrive;
 using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace SimpleOnedriveClient
@@ -22,7 +23,10 @@ namespace SimpleOnedriveClient
 
         private async System.Threading.Tasks.Task RefreshListAsync()
         {
-            await SimpleClient.Instance.CreateFolder("cosplay2", "testfolder2", "testfolder3");
+            var files=await SimpleClient.Instance.GetSubFiles("cosplay");
+            foreach(var f in files.value)
+            Debug.WriteLine(f.id+":"+f.webUrl);
+           // await SimpleClient.Instance.uploadFileFromUrl("http://baby.japaninfoz.com/wp-content/uploads/2016/10/IMGP4251-300x199.jpg","baby.jpg", "cosplay", "testfolder1");
         }
 
         private void button1_Click(object sender, EventArgs e)

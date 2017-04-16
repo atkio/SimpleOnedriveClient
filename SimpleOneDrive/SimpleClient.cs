@@ -66,7 +66,7 @@ namespace SimpleOneDrive
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
                 HttpRequestMessage request = new HttpRequestMessage(
                     HttpMethod.Get,
-                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children?$select=name,weburl,createdDateTime,lastModifiedDateTime", path))
+                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children?$select=id,name,weburl,createdDateTime,lastModifiedDateTime", path))
                 );
                 var response = await httpClient.SendAsync(request);
                 MyFiles files = JsonConvert.DeserializeObject<MyFiles>(response.Content.ReadAsStringAsync().Result);
@@ -79,6 +79,7 @@ namespace SimpleOneDrive
         // ファイル アップロード処理
         public async Task uploadFileFromUrl(string url, string name,params string[] remotePaths)
         {
+          
             string upurl = "https://graph.microsoft.com/v1.0/me/drive/root:/children";
             if (remotePaths != null)
             {
@@ -107,15 +108,20 @@ namespace SimpleOneDrive
         }
 
         // ファイル アップロード処理
-        private async Task uploadFile(string localPath, string remotePath)
+        public async Task uploadFile(string localPath, params string[] remotePaths)
         {
+            string upurl = "https://graph.microsoft.com/v1.0/me/drive/root:/";
+            if (remotePaths != null)
+            {
+                upurl = string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/", String.Join(":/", remotePaths));
+            }
             using (HttpClient httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "octet-stream");
                 HttpRequestMessage request = new HttpRequestMessage(
                     HttpMethod.Put,
-                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/{1}:/content", remotePath, new FileInfo(localPath).Name))
+                    new Uri(string.Format(upurl+"{0}:/content", new FileInfo(localPath).Name))
                 );
                 request.Content = new ByteArrayContent(ReadFileContent(localPath));
                 var response = await httpClient.SendAsync(request);
@@ -142,7 +148,7 @@ namespace SimpleOneDrive
         }
 
         // ファイル名の変更処理
-        private async Task renameFile(string remotePath, string name, string newname)
+        public async Task renameFile(string remotePath, string name, string newname)
         {
 
             using (HttpClient httpClient = new HttpClient())
@@ -202,12 +208,12 @@ namespace SimpleOneDrive
             }
 
         }
-    
 
-    // フォルダの新規作成
-    public async Task CreateFolderBase(string baseurl,string folder)
-    {
-     
+
+        // フォルダの新規作成
+        public async Task CreateFolderBase(string baseurl, string folder)
+        {
+
             using (HttpClient httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
@@ -224,18 +230,26 @@ namespace SimpleOneDrive
 
                 Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
             }
-            
-        }
 
+        }
+            
 }
 
-public class MyFile
+    public class MyFile
     {
+        public string id { get; set; }
         public string name { get; set; }
         // 以下のプロパティは今回使用しませんが、デバッグ時に値を見ることをお勧めします。
         public string webUrl { get; set; }
         public string createdDateTime { get; set; }
         public string lastModifiedDateTime { get; set; }
+        public MyFolder folder { get; set; }
+        public List<MyFile> children { get; set; }
+    }
+
+    public class MyFolder
+    {
+        public Int64 childCount { get; set; }
     }
 
     public class MyFiles
