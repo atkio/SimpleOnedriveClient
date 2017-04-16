@@ -77,16 +77,22 @@ namespace SimpleOneDrive
         }
 
         // ファイル アップロード処理
-        public async Task uploadFileFromUrl(string url, string name, string remotePath)
+        public async Task uploadFileFromUrl(string url, string name,params string[] remotePaths)
         {
+            string upurl = "https://graph.microsoft.com/v1.0/me/drive/root:/children";
+            if (remotePaths != null)
+            {
+                upurl = string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children",String.Join(":/", remotePaths));
+            }
+          
+
             using (HttpClient httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Prefer", "respond-async");
                 HttpRequestMessage request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    new Uri(string.Format("https://graph.microsoft.com/v1.0/me/drive/root:/{0}:/children", remotePath))
+                    HttpMethod.Post,new Uri(upurl)
                 );
                 var content = new Dictionary<string, object>();
                 content.Add("@microsoft.graph.sourceUrl", url);
