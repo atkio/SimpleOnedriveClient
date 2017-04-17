@@ -2,7 +2,10 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SimpleOneDrive
 {
@@ -15,7 +18,7 @@ namespace SimpleOneDrive
         public string refresh_token { get; set; }
         public string client_secret { get; set; }
         public double expired_datetime { get; set; }
-        private bool IsExpired { get { return expired_datetime - 5 * 60 < TimeSpan.FromTicks(DateTime.Now.Ticks).TotalSeconds; } }
+        public bool IsExpired { get { return expired_datetime - 5 * 60 < TimeSpan.FromTicks(DateTime.Now.Ticks).TotalSeconds; } }
 
         public const string Define = "AuthStore.json";
         private static object syncRoot = new Object();
@@ -33,11 +36,11 @@ namespace SimpleOneDrive
 
                 if (_Instance == null)
                     lock (syncRoot)
-                    {
                         if (_Instance == null)
+                        {
                             _Instance = JsonConvert.DeserializeObject<AuthStore>(
                            System.IO.File.ReadAllText(Define));
-                    }
+                        }
 
                 return _Instance;
             }
@@ -52,11 +55,17 @@ namespace SimpleOneDrive
                     Formatting.Indented));
         }
 
-        public  bool TryRefreshToken()
+        public bool TryRefreshToken()
         {
             try
             {
-                
+                if (!IsExpired)
+                {
+                    return true;
+                }
+
+                Debug.WriteLine("reauth!");
+
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri("https://login.microsoftonline.com");
@@ -70,17 +79,20 @@ namespace SimpleOneDrive
                         });
                     var result = client.PostAsync("/common/oauth2/v2.0/token", content).Result;
                     string resultContent = result.Content.ReadAsStringAsync().Result;
+                    Debug.WriteLine(resultContent);
                     var authresult = JObject.Parse(resultContent);
                     this.refresh_token = authresult["refresh_token"].ToString();
                     this.access_token = authresult["access_token"].ToString();
-                    this.expired_datetime = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalSeconds + 
+                    this.expired_datetime = TimeSpan.FromTicks(DateTime.Now.Ticks).TotalSeconds +
                                             double.Parse(authresult["expires_in"].ToString());
                     this.save();
                 }
+                Thread.Sleep(500);
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                Debug.WriteLine(e.Message);
                 return false;
             }
         }

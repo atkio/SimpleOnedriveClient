@@ -19,7 +19,11 @@ namespace SimpleOnedriveClient
         {
             InitializeComponent();
 
-         
+            this.TopMost = true;
+
+            client_id.Text = AuthStore.Instance.client_id;
+            client_secret.Text = AuthStore.Instance.client_secret;
+            redirect_uri.Text = AuthStore.Instance.redirect_uri;
         }
 
         private void button3_Click(object sender, EventArgs e)
