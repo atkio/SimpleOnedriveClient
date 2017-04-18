@@ -100,15 +100,20 @@ namespace SimpleOnedriveClient
 
         private async void button4_Click(object sender, EventArgs e)
         {
-            if (treeView1.SelectedNode == null)
-                return;
-
             if (String.IsNullOrWhiteSpace(textBox1.Text))
                 return;
+            if (treeView1.SelectedNode == null)
+            {
+                await SimpleClient.Instance.CreateFolder(textBox1.Text);
+                return;
+            }
+                
+
+          
 
             var pid = treeView1.SelectedNode.Name;
 
-            await SimpleClient.Instance.CreateFolder(pid, textBox1.Text);
+            await SimpleClient.Instance.CreateFolder(textBox1.Text,pid);
 
             RefreshListAsync();
         }

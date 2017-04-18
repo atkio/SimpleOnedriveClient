@@ -58,7 +58,7 @@ namespace SimpleOneDrive
         /// <param name="parentID"></param>
         /// <param name="folder"></param>
         /// <returns></returns>
-        public async Task CreateFolder(string parentID, string folder)
+        public async Task<OnedriveItemMeta> CreateFolder( string folder, string parentID=null)
         {
 
             using (HttpClient httpClient = new HttpClient())
@@ -68,6 +68,8 @@ namespace SimpleOneDrive
 
                 HttpRequestMessage request = new HttpRequestMessage(
                     HttpMethod.Post,
+                    (parentID == null) ?
+                    new Uri(apistring + "/drive/root/children") :
                     new Uri(apistring+string.Format("/drive/items/{0}/children", parentID))
                 );
 
@@ -75,8 +77,13 @@ namespace SimpleOneDrive
                 request.Content = new StringContent("{\"name\": \"" + folder + "\",\"folder\": { }}", Encoding.UTF8, "application/json");
 
                 var response = await httpClient.SendAsync(request);
+                var responseText = await response.Content.ReadAsStringAsync();
 
-                Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Debug.WriteLine(responseText);
+
+                OnedriveItemMeta item = JsonConvert.DeserializeObject<OnedriveItemMeta>(responseText);
+
+                return item;
             }
 
         }
@@ -120,7 +127,7 @@ namespace SimpleOneDrive
                     new Uri(apistring+string.Format("/drive/items/{0}/content", itemid))
                 );
                 var response = await httpClient.SendAsync(request);
-                await ReadAsFileAsync(response.Content, localfilename,true);
+                await ReadAsFileAsync(response.Content, localfilename);
             }
         }
 
@@ -131,13 +138,10 @@ namespace SimpleOneDrive
         /// <param name="pathname"></param>
         /// <param name="overwrite"></param>
         /// <returns></returns>
-        private static Task ReadAsFileAsync(HttpContent content, string pathname, bool overwrite)
+        private static Task ReadAsFileAsync(HttpContent content, string pathname)
         {
             
-            if (!overwrite && File.Exists(pathname))
-            {
-                throw new InvalidOperationException(string.Format("File {0} already exists.", pathname));
-            }
+     
 
             FileStream fileStream = null;
             try
@@ -268,7 +272,7 @@ namespace SimpleOneDrive
         /// <param name="localFile"></param>
         /// <param name="remotepathid"></param>
         /// <returns></returns>
-        public async Task uploadFile(string localFile, string remotepathid = null)
+        public async Task<OnedriveItemMeta> uploadFile(string localFile, string remotepathid = null)
         {
             
             using (HttpClient httpClient = new HttpClient())
@@ -284,7 +288,11 @@ namespace SimpleOneDrive
                 request.Content = new ByteArrayContent(File.ReadAllBytes(localFile));
                 var response = await httpClient.SendAsync(request);
 
-                Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+                var responseText = await response.Content.ReadAsStringAsync();
+
+                Debug.WriteLine(responseText);
+
+                return JsonConvert.DeserializeObject<OnedriveItemMeta>(responseText);
             }
         }
 
